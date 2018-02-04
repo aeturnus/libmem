@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
 #include <stddef.h>
 #include <sys/types.h>
 
@@ -22,11 +23,25 @@ typedef enum _mem_mode
     MEM_MMAP    // internally mmap a range
 } mem_mode;
 
+typedef enum _mem_status
+{
+    MEM_OKAY,
+    MEM_BAD_OPEN,
+    MEM_BAD_MMAP
+} mem_status;
+
 typedef struct _mem_context
 {
     int fd;     // memory device handle
-    int mode;   //
-    void * mem;
+    mem_mode mode;
+    int write;  // write permission
+
+    // mmap mode only data
+    void * map; // mmap memory pointer
+    void * s_addr;  // start
+    void * e_addr;  // end
+    size_t map_range;   // range between s_addr and e_addr
+    size_t map_len;     // needed for munmap()
 } mem_context;
 
 /**
@@ -36,13 +51,16 @@ typedef struct _mem_context
  * If mode is MEM_MMAP, the address range that is mapped will be
  * [start_addr, end_addr]
  * @param[in]   mode    The mode you want this context to operate in. If this is
- *                      MEM_FILE, the reamining parameters do not matter
+ *                      MEM_FILE, the address parameters do not matter
+ * @param[in]   write   If true, allows for writing
  * @param[in]   start_addr  If mode is MEM_MMAP, the start address of the physical
  *                          address space to map
  * @param[in]   end_addr    If mode is MEM_MMAP, the end address of the physical
  *                          address space to map
+ * @return  Status of initialization
  */
-void mem_ctor(mem_context * mem, mem_mode mode, void * start_addr, void * end_addr);
+mem_status mem_ctor(mem_context * mem, mem_mode mode, int write,
+                    void * start_addr, void * end_addr);
 
 /**
  * Destorys memory context
