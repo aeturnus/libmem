@@ -26,7 +26,7 @@ typedef struct _mem_context
 {
     int fd;     // memory device handle
     int mode;   //
-    void * mem
+    void * mem;
 } mem_context;
 
 /**
