@@ -16,14 +16,14 @@ CFLAGS += -g
 INCLUDE = -I$(PROOT)/inc
 LIBS   = -L$(LIBDIR) -l:libmem.a
 
-SOURCES += $(shell find $(SRCDIR) -name '*.c')
+BIN_SOURCES += $(shell find $(SRCDIR)/app -name '*.c')
+LIB_SOURCES += $(shell find $(SRCDIR)/lib -name '*.c')
 SLIB = lib$(MODULE).a
 DLIB = lib$(MODULE).so
 BIN = $(MODULE)
 
-BIN_OBJECT = $(OBJDIR)/$(MODULE)/main.o
-OBJECTS = $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/$(MODULE)/%.o)
-LIB_OBJECTS = $(filter-out $(BIN_OBJECT), $(OBJECTS))
+BIN_OBJECTS = $(BIN_SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/$(MODULE)/%.o)
+LIB_OBJECTS = $(LIB_SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/$(MODULE)/%.o)
 
 $(OBJDIR)/$(MODULE)/%.o:$(SRCDIR)/%.c
 	mkdir -p $(@D)	# generate the directory
@@ -34,12 +34,12 @@ $(LIBDIR)/$(SLIB): $(LIB_OBJECTS)
 	$(AR) rcs $(LIBDIR)/$(SLIB) $(LIB_OBJECTS)
 	@echo "Static library built: $(LIBDIR)/$(SLIB)"
 
-$(BINDIR)/$(BIN): $(LIBDIR)/$(LIB) $(BIN_OBJECT)
+$(BINDIR)/$(BIN): $(LIBDIR)/$(LIB) $(BIN_OBJECTS)
 	mkdir -p $(BINDIR)
-	$(CC) $(CFLAGS) $(INCLUDE) $(LIBS) -o $(BINDIR)/$(BIN) $(BIN_OBJECT) 
+	$(CC) $(CFLAGS) $(INCLUDE) $(LIBS) -o $(BINDIR)/$(BIN) $(BIN_OBJECTS) 
 	@echo "Executable application built: $(BINDIR)/$(BIN)"
 
-all: $(LIBDIR)/$(LIB) $(BINDIR)/$(BIN)
+all: $(BINDIR)/$(BIN)
 
 static: $(LIB_DIR)/$(LIB)
 
@@ -47,7 +47,7 @@ shared: $(LIB_DIR)/$(LIB)
 	$(CC) -shared -Wl,--whole-archive -o $(LIBDIR)/$(DLIB) $(LIBDIR)/$(SLIB) -Wl,--no-whole-archive
 	@echo "Dynamic library built: $(LIBDIR)/$(DLIB)"
 
-application: $(LIBDIR)/$(LIB) $(BINDIR)/$(BIN)
+app: $(LIBDIR)/$(LIB) $(BINDIR)/$(BIN)
 
 clean:
 	rm -rf $(BINDIR)
