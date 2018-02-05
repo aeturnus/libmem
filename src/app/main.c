@@ -3,6 +3,8 @@
 
 #include <mem/mem.h>
 
+//#define MMAP
+
 int main(int argc, char ** argv)
 {
     printf("mem utility testing version\n");
@@ -21,7 +23,15 @@ int main(int argc, char ** argv)
 
 
     mem_context mem;
+    #ifndef MMAP
+    printf("non-mmap version\n");
     if (mem_ctor(&mem, MEM_FILE, 0, NULL, NULL) != MEM_OKAY) {
+    #else
+    printf("mmap version\n");
+    if (mem_ctor(&mem, MEM_MMAP, 0, (void *) read_addr,
+                (void *) ((uintptr_t) read_addr + sizeof(uint32_t) - 1))
+        != MEM_OKAY) {
+    #endif
         printf("Failed to start up libmem context\n");
         return -1;
     }

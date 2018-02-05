@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <unistd.h>
 
 #include <sys/mman.h>
@@ -36,6 +38,8 @@ mem_status mem_ctor(mem_context * mem, mem_mode mode, int write,
             return MEM_BAD_MMAP;
         }
         mem->map_len = length;
+        mem->s_addr = start_addr;
+        mem->e_addr = end_addr;
 
     } else {
         mem->s_addr = NULL;
@@ -61,6 +65,17 @@ ssize_t mem_read (mem_context * mem, void * addr, void * buf, size_t count)
 {
     ssize_t read_bytes = -1;
     if (mem->mode == MEM_MMAP) {
+        if (addr < mem->s_addr || mem->e_addr < addr)
+            return read_bytes;
+
+        // calculate the offset from the map base address
+        // since mem->s_addr was mapped to the mem->map, get the offset from
+        // mem->s_addr and add it to mem->map
+        void * map_addr = (void *) ((uintptr_t) addr - (uintptr_t) mem->s_addr +
+                                    (uintptr_t) mem->map);
+
+        memcpy(buf, map_addr, count);
+        read_bytes = count;
     } else {
         // move the read head to correct offset and read
         off_t offset = (off_t) (uintptr_t) addr;
