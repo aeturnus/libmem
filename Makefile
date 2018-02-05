@@ -36,7 +36,7 @@ $(LIBDIR)/$(SLIB): $(LIB_OBJECTS)
 
 $(BINDIR)/$(BIN): $(LIBDIR)/$(LIB) $(BIN_OBJECTS)
 	mkdir -p $(BINDIR)
-	$(CC) $(CFLAGS) $(INCLUDE) $(LIBS) -o $(BINDIR)/$(BIN) $(BIN_OBJECTS) 
+	$(CC) $(CFLAGS) $(INCLUDE) -o $(BINDIR)/$(BIN) $(BIN_OBJECTS) $(LIBS) 
 	@echo "Executable application built: $(BINDIR)/$(BIN)"
 
 all: $(BINDIR)/$(BIN)
