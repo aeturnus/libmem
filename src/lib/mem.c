@@ -38,6 +38,7 @@ mem_status mem_ctor(mem_context * mem, mem_mode mode, int write,
             return MEM_BAD_MMAP;
         }
         mem->map_len = length;
+        mem->s_page = (void *) offset;
         mem->s_addr = start_addr;
         mem->e_addr = end_addr;
 
@@ -69,9 +70,9 @@ ssize_t mem_read (mem_context * mem, void * addr, void * buf, size_t count)
             return read_bytes;
 
         // calculate the offset from the map base address
-        // since mem->s_addr was mapped to the mem->map, get the offset from
-        // mem->s_addr and add it to mem->map
-        void * map_addr = (void *) ((uintptr_t) addr - (uintptr_t) mem->s_addr +
+        // since mem->s_page was mapped to the mem->map, get the offset from
+        // mem->s_page and add it to mem->map
+        void * map_addr = (void *) ((uintptr_t) addr - (uintptr_t) mem->s_page +
                                     (uintptr_t) mem->map);
 
         memcpy(buf, map_addr, count);
