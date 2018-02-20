@@ -3,7 +3,7 @@
 
 #include <mem/mem.h>
 
-//#define MMAP
+#define MMAP
 
 int main(int argc, char ** argv)
 {
