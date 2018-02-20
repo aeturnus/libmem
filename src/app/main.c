@@ -37,10 +37,14 @@ int main(int argc, char ** argv)
     }
 
     uint32_t val = 0xDEADBEEF;
-    mem_read(&mem, read_addr, &val, sizeof(val));
-    printf("[%p] = 0x%08x\n", read_addr, val);
+    int bytes_read = mem_read(&mem, read_addr, &val, sizeof(val));
+    if (bytes_read < 0) {
+        printf("Read failed (returned -1)\n");
+    } else {
+        printf("[%p] = 0x%08x\n", read_addr, val);
+    }
 
     mem_dtor(&mem);
 
-    return 0;
+    return bytes_read >= 0 ? 0 : -1;
 }

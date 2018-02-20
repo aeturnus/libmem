@@ -79,7 +79,10 @@ ssize_t mem_read (mem_context * mem, void * addr, void * buf, size_t count)
     } else {
         // move the read head to correct offset and read
         off_t offset = (off_t) (uintptr_t) addr;
-        lseek(mem->fd, offset, SEEK_SET);
+        off_t pos = lseek(mem->fd, offset, SEEK_SET);
+        if (pos < 0) {
+            return read_bytes;
+        }
         read_bytes = read(mem->fd, buf, count);
     }
     return read_bytes;
