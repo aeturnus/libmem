@@ -62,34 +62,58 @@ void mem_dtor(mem_context * mem)
     close(mem->fd);
 }
 
-ssize_t mem_read (mem_context * mem, void * addr, void * buf, size_t count)
+// calculate the offset from the map base address
+// since mem->s_page was mapped to the mem->map, get the offset from
+// mem->s_page and add it to mem->map
+static inline
+void * calc_map_addr(mem_context * mem, void * addr)
 {
-    ssize_t read_bytes = -1;
+    return (void *) ((uintptr_t) addr - (uintptr_t) mem->s_page +
+                     (uintptr_t) mem->map);
+}
+
+// common transfer function
+#define D_RD 0
+#define D_WR 1
+static
+ssize_t mem_xfer (mem_context * mem, void * addr, void * buf,
+                  size_t count, int dir)
+{
+    ssize_t xfer_bytes = -1;
     if (mem->mode == MEM_MMAP) {
         if (addr < mem->s_addr || mem->e_addr < addr)
-            return read_bytes;
+            return xfer_bytes;
 
-        // calculate the offset from the map base address
-        // since mem->s_page was mapped to the mem->map, get the offset from
-        // mem->s_page and add it to mem->map
-        void * map_addr = (void *) ((uintptr_t) addr - (uintptr_t) mem->s_page +
-                                    (uintptr_t) mem->map);
+        void * map_addr = calc_map_addr(mem, addr);
 
-        memcpy(buf, map_addr, count);
-        read_bytes = count;
+        if (dir == D_RD) {
+            memcpy(buf, map_addr, count);
+        } else {
+            memcpy(map_addr, buf, count);
+        }
+        xfer_bytes = count;
     } else {
         // move the read head to correct offset and read
         off_t offset = (off_t) (uintptr_t) addr;
         off_t pos = lseek(mem->fd, offset, SEEK_SET);
         if (pos < 0) {
-            return read_bytes;
+            return xfer_bytes;
         }
-        read_bytes = read(mem->fd, buf, count);
+        if (dir == D_RD) {
+            xfer_bytes = read(mem->fd, buf, count);
+        } else {
+            xfer_bytes = write(mem->fd, buf, count);
+        }
     }
-    return read_bytes;
+    return xfer_bytes;
+}
+
+ssize_t mem_read(mem_context * mem, void * addr, void * buf, size_t count)
+{
+    return mem_xfer(mem, addr, buf, count, D_RD);
 }
 
 ssize_t mem_write(mem_context * mem, void * addr, const void * buf, size_t count)
 {
-    return -1;
+    return mem_xfer(mem, addr, (void *) buf, count, D_WR);
 }
