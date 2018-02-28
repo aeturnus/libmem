@@ -41,7 +41,7 @@ typedef struct _mem_context
     void * s_page;  // real start passed to mmap() due to page boundary
     void * s_addr;  // start
     void * e_addr;  // end
-    size_t map_range;   // range between s_addr and e_addr
+    size_t range;   // range between s_addr and e_addr
     size_t map_len;     // needed for munmap()
 } mem_context;
 

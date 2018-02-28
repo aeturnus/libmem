@@ -41,6 +41,7 @@ mem_status mem_ctor(mem_context * mem, mem_mode mode, int write,
         mem->s_page = (void *) offset;
         mem->s_addr = start_addr;
         mem->e_addr = end_addr;
+        mem->range  = end - start + 1;
 
     } else {
         mem->s_addr = NULL;
@@ -131,7 +132,7 @@ void * mem_addr_off(mem_context * mem, uintptr_t offset)
     if (mem->mode != MEM_MMAP)
         return NULL;
 
-    if (offset > (uintptr_t) mem->map_range)
+    if (offset > (uintptr_t) mem->range)
         return NULL;
 
     void * addr = mem_addr(mem, (void *) ((uintptr_t) mem->s_addr + offset));
