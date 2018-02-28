@@ -80,6 +80,17 @@ ssize_t mem_read (mem_context * mem, void * addr, void * buf, size_t count);
  */
 ssize_t mem_write(mem_context * mem, void * addr, const void * buf, size_t count);
 
+/**
+ * For MEM_MMAP mode only. Returns a memory-mapped address for a givent paddr
+ */
+void * mem_addr(mem_context * mem, void * addr);
+
+/**
+ * For MEM_MMAP mode only. Returns a memory-mapped address for a given offset
+ * from the start address provided at construction.
+ */
+void * mem_addr_off(mem_context * mem, uintptr_t offset);
+
 #ifdef __cplusplus
 }
 #endif

@@ -117,3 +117,24 @@ ssize_t mem_write(mem_context * mem, void * addr, const void * buf, size_t count
 {
     return mem_xfer(mem, addr, (void *) buf, count, D_WR);
 }
+
+void * mem_addr(mem_context * mem, void * addr)
+{
+    if (mem->mode != MEM_MMAP)
+        return NULL;
+
+    return calc_map_addr(mem, addr);
+}
+
+void * mem_addr_off(mem_context * mem, uintptr_t offset)
+{
+    if (mem->mode != MEM_MMAP)
+        return NULL;
+
+    if (offset > (uintptr_t) mem->map_range)
+        return NULL;
+
+    void * addr = mem_addr(mem, (void *) ((uintptr_t) mem->s_addr + offset));
+
+    return addr;
+}
